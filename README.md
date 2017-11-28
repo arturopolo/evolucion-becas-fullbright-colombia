@@ -15,8 +15,6 @@ Por medio de esta visualizaci&oacute;n, adem&aacute;s de presentarse la evoluci&
     <li>La 80's se caracterizaron por la alta asignaci&oacute;n de becas relacionadas con las Ciencias Sociales.</li>
     <li>Principios de los 90'2 se caracterizaron por la baja asignaci&oacute;n de becas relacionadas con Ingenier&iacute;a.</li>
     <li>Finalmente en el 2000 viene predominando la asignaci&oacute;n de becas relacionadas con Educaci&oacute;n.</li>
-    <li>Ocean&iacute;a y Africa dominan en la categor&iacute;a E.</li>
-    <li>SurAm&eacute;rica aunque no domina, tiene su mejor desempe&ntilde;o en la categor&iacute;a B.</li>
 </ul>
 <br>
 <a href="https://arturopolo.github.io/evolucion-becas-fullbright-colombia.github.io/">Visit Project Page</a>
