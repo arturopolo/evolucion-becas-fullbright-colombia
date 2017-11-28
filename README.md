@@ -8,7 +8,7 @@ Por medio de esta visualizaci&oacute;n, adem&aacute;s de presentarse la evoluci&
 </p>
 </div>
 <br>
-<img src="https://arturopolo.github.io/dominancia-juegos-olimpicos-rio.github.io/ImagenReadME.jpg">
+<img src="https://arturopolo.github.io/evolucion-becas-fullbright-colombia.github.io/ImagenReadME.jpg">
 <br>
 <p align="justify">Como resultado se obtuvo que:</p>
 <ul>
