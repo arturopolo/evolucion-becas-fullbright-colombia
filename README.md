@@ -13,7 +13,7 @@ Por medio de esta visualizaci&oacute;n, adem&aacute;s de presentarse la evoluci&
 <p align="justify">Como resultado se obtuvo que:</p>
 <ul>
     <li>La 80's se caracterizaron por la alta asignaci&oacute;n de becas relacionadas con las Ciencias Sociales.</li>
-    <li>Principios de los 90'2 se caracterizaron por la baja asignaci&oacute;n de becas relacionadas con Ingenier&iacute;a.</li>
+    <li>Principios de los 90's se caracterizaron por la baja asignaci&oacute;n de becas relacionadas con Ingenier&iacute;a.</li>
     <li>Finalmente en el 2000 viene predominando la asignaci&oacute;n de becas relacionadas con Educaci&oacute;n.</li>
 </ul>
 <br>
