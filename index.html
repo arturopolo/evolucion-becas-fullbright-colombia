@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body {
+      font-family: "Roboto", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      font: 12px sans-serif;
+    }
+
+    .legend {
+      font-family: "Helvetica Neue";
+      font-size: 10px;
+    }
+
+    .axis path,
+    .axis line {
+      fill: none;
+      stroke: none;
+      shape-rendering: crispEdges;
+    }
+
+    .browser text {
+      text-anchor: end;
+    }
+
+    svg .annotation.callout.rect path.subject{
+      fill-opacity: .1;
+    }
+
+    svg .annotation.callout.rect path.subject {
+      fill: var(--annotation-context-color);
+      stroke: none;
+      stroke-dasharray: 2, 8;
+    }
+
+    :root {
+      --line-chart-color: #607D8B;
+      --annotation-context-color: #546E7A;
+      --annotation-badge-color:white;
+      --annotation-color: #E8336D;
+    }
+
+    svg text.legend{
+      text-anchor: start;
+      fill: var(--annotation-color)
+    }    
+
+    .overlay {
+        fill: none;
+        pointer-events: all;
+    }    
+
+    .title-h3 {
+        margin-top: 20px;
+        margin-bottom: 10px;
+        font-size: 24px;
+        font-weight: 500;
+        line-height: 1.1;
+        color: #3B3B3B;
+        text-align: center;
+    }
+
+  </style>
+</head>  
+<body>
+  <script src="https://d3js.org/d3.v4.0.0-rc.2.min.js"></script>
+  <script src="https://rawgit.com/susielu/d3-annotation/master/d3-annotation.min.js"></script>
+  <div class="title-h3">Evoluci&oacute;n becas Fundaci&oacute;n FULLBRIGHT</div>
+  <br>
+  <br>
+  <table align="center"><tr><td><a href="https://github.com/arturopolo/dominancia-juegos-olimpicos-rio.github.io">View on GitHub</a></td></tr></table>
+  <br>
+  <br>
+  <table align="center">
+  <tr>
+  <td>
+  <div id="boton">
+    <input name="botonInsight" 
+           type="button" 
+           value="Generar Insights" 
+           onclick="getInsight()" />
+  </div>  
+  <div id="chart"></div>
+  
+  <script>
+    var margin = {top: 20, right: 300, bottom: 30, left: 40}
+       ,width = 960 - margin.left - margin.right
+       ,height = 500 - margin.top - margin.bottom
+       ,parseDate = d3.timeParse('%Y')
+       ,format = d3.timeFormat('%Y')
+       ,x = d3.scaleTime().range([0, width])
+       ,y = d3.scaleLinear().range([height, 0])
+       ,color = d3.scaleOrdinal(d3.schemeCategory20)
+       ,xAxis = d3.axisBottom().scale(x)
+       ,yAxis = d3.axisLeft().scale(y);
+
+    var bisectDate = d3.bisector(function(d) {
+            return d.ANYO;
+        }).left;
+
+    var area = d3.area()
+                 .x(function(d) { return x(d.data.ANYO); })
+                 .y0(function(d) { return y(d[0]); })
+                 .y1(function(d) { return y(d[1]); });
+
+    var stack = d3.stack();
+
+    var svg = d3.select('#chart')
+                .append('svg')
+                .attr('width', width + margin.left + margin.right)
+                .attr('height', height + margin.top + margin.bottom)
+                .append('g')
+                .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+
+
+    var numberOfInsight = 0;
+    const notesForInsights = [
+          {
+            label: "Mínimo histórico de la fundación. Solo se entregaron 30 becas al año"
+           ,title: "1969"
+           ,x: 170
+           ,y: 400
+           ,dy: -100
+           ,dx: 0
+           ,wrap: 80
+           ,tipo: 1
+          },
+          {
+            label: "Década de Ciencias Sociales. Se asignan 25 anuales a esta área de estudio."
+           ,title: "SOCIALES. 79' al 89'"
+           ,fechaInicio: "1/1/1979"
+           ,fechaFin: "1/1/1989"
+           ,y: margin.top
+           ,wrap: 100
+           ,tipo: 2
+          },
+          {
+            label: "Reducción en un 73% de las becas asignadas a Ingeniería lo que equivale a pasar de otorgar 15 becas al año a solo otorgar 4 becas anuales."
+           ,title: "NO INGENIERIA. 90' al 96'"
+           ,fechaInicio: "1/1/1990"
+           ,fechaFin: "1/1/1996"
+           ,y: margin.top
+           ,wrap: 60
+           ,tipo: 2
+          },
+          {
+            label: "Foco en Educación registrando asignaciones de becas de hasta 49 en un año. Arte, Aquitectura o Biología también presentan incrementos importantes.."
+           ,title: "EDUCACION. Desde el 07'"
+           ,fechaInicio: "1/1/1998"
+           ,fechaFin: "1/1/2014"
+           ,y: margin.top
+           ,wrap: 150
+           ,tipo: 2
+          },
+          // {
+          //   label: "Máximo histórico de la fundación. 252 becas asignadas en un año."
+          //  ,title: "2014"
+          //  ,x: width + 40
+          //  ,y: margin.top
+          //  ,dy: -20
+          //  ,dx: -10
+          //  ,tipo: 1
+          // },
+
+      ];
+
+
+    function draw() {
+
+        d3.csv('data/data.csv', function(error, data) {
+        
+          if (error) throw error;
+
+          color.domain(d3.keys(data[0]).filter(function(key) { return key !== 'ANYO'; }));
+          var keys = data.columns.filter(function(key) { return key !== 'ANYO'; })
+          data.forEach(function(d) {
+            d.ANYO = parseDate(d.ANYO); 
+          });
+
+
+          var maxDateVal = d3.max(data, function(d){
+            var vals = d3.keys(d).map(function(key){ return key !== 'ANYO' ? d[key] : 0 });
+            return d3.sum(vals);
+          });
+
+          //console.log(maxDateVal);
+      
+          // Set domains for axes
+          x.domain(d3.extent(data, function(d) { return d.ANYO; }));
+          y.domain([0, maxDateVal])
+
+          stack.keys(keys);
+
+          stack.order(d3.stackOrderNone);
+          stack.offset(d3.stackOffsetNone);
+
+    //      console.log(stack(data));
+
+          var browser = svg.selectAll('.browser')
+                           .data(stack(data))
+                           .enter()
+                           .append('g')
+                           .attr('class', function(d){ return 'browser ' + d.key; })
+                           .attr('fill-opacity', 0.8);
+
+          browser.append('path')
+                 .attr('class', 'area')
+                 .attr('d', area)
+                 .style('fill', function(d) { return color(d.key); });
+          
+          var legend = svg.selectAll(".legend")
+                          .data(keys)
+                          .enter()
+                          .append("g")
+                          .attr("class","legend")
+                          .attr("transform", "translate(" + (width + 10) + "," + 0+ ")");
+
+          legend.append("rect")
+                .attr("x", 30) 
+                .attr("y", function(d, i) { return 20 * i; })
+                .attr("width", 10)
+                .attr("height", 10)
+                .style("fill", function(d, i) { return color(d);});
+
+          legend.append("text")
+                .attr("x", 45) 
+                .attr("dy", "0.75em")
+                .attr("y", function(d, i) { return 20 * i; }) 
+                .text(function(d) {return d});
+
+          var focus = svg.selectAll(".boxes")
+                         .data(keys) // bind each column name date to each g element
+                         .enter()
+                         .append("g") //create one <g> for each columnName
+                         .attr("class", "focus")
+                         .attr("transform", "translate(" + (width + 10) + "," + 0+ ")");
+
+          focus.append("text")
+               .attr("class", "tooltip")
+               .attr("x", 10) 
+               .attr("y", function(d, i) { return 20 * i + 7; });
+
+
+          svg.append('g')
+             .attr('class', 'x axis')
+             .attr('transform', 'translate(0,' + height + ')')
+             .call(xAxis.ticks(50))
+             .selectAll("text")
+             .attr("dy", ".35em")
+             .attr("y", 0)
+             .attr("x", -30)
+             .attr('transform', 'rotate(-90)')
+             .style("text-anchor", "start");
+
+          svg.append('g')
+             .attr('class', 'y axis')
+             .call(yAxis);
+
+          svg.append ("text")
+             .attr("x", 0-margin.left)
+             .text("Número de becas");
+
+          svg.append ("text")
+             .attr("x", width + 15)
+             .attr("y", height + 10)
+             .text("Años");
+
+          var textAnyo = svg.append ("text")
+                            .attr("font-size", 14)
+                            .attr("x", width + 10)
+                            .attr("y", -10);
+
+          svg.append("rect")
+             .attr("class", "overlay")
+             .attr("width", width)
+             .attr("height", height)
+             .on("mousemove", mousemove)
+             .on("mouseout", mouseout);
+
+          function mousemove() {
+              
+              var x0 = x.invert(d3.mouse(this)[0]),
+                  i = bisectDate(data, x0, 1),
+                  d0 = data[i - 1],
+                  d1 = data[i],
+                  d= x0 - d0.ANYO > d1.ANYO - x0 ? d1 : d0,
+                  vals1 = d3.keys(d).map(function(key){ return key !== 'ANYO' ? d[key]: 0});
+              focus.select("text")
+                  .data(vals1.slice(1))
+                  .text(function(d, i) { return d; });
+              textAnyo.text(format(d.ANYO));
+          }             
+
+          function mouseout() {
+            focus.select("text")
+                .text(function(d, i) { return ""; });
+            textAnyo.text("");
+          }
+        
+      });
+    }
+
+    function getInsight() {
+
+      if (numberOfInsight <= notesForInsights.length - 1) {
+        
+        //console.log(numberOfInsight);
+
+        if (notesForInsights[numberOfInsight].tipo == 1) {
+
+              const annotations = [
+                {
+                  type: d3.annotationCalloutElbow
+                 ,note: {
+                    label: notesForInsights[numberOfInsight].label,
+                    title: notesForInsights[numberOfInsight].title,
+                    wrap: notesForInsights[numberOfInsight].wrap
+                  }
+                 ,x: notesForInsights[numberOfInsight].x
+                 ,y: notesForInsights[numberOfInsight].y
+                 ,dy: notesForInsights[numberOfInsight].dy
+                 ,dx: notesForInsights[numberOfInsight].dx
+                 ,connector: { end: "arrow" }
+                }].map(function(d){ d.color = "Gray"; return d});
+
+
+              const makeAnnotations = d3.annotation()
+                                        .type(d3.annotationLabel)
+                                        .annotations(annotations);
+
+              d3.select("svg")
+                .append("g")
+                .attr("class", "annotation-group")
+                .call(makeAnnotations)                
+
+        } else {
+
+              const annotations = [
+                {
+                  note: { 
+                    label: notesForInsights[numberOfInsight].label,
+                    title: notesForInsights[numberOfInsight].title, 
+                    lineType: "none", 
+                    align: "middle",
+                    wrap: notesForInsights[numberOfInsight].wrap
+                  }
+                 ,subject: {
+                    height: height,
+                    width: x(new Date(notesForInsights[numberOfInsight].fechaFin)) - x(new Date(notesForInsights[numberOfInsight].fechaInicio))
+                  }
+                 ,y: notesForInsights[numberOfInsight].y
+                 ,disable: ["connector"]
+                 ,dx: (x(new Date(notesForInsights[numberOfInsight].fechaFin)) - x(new Date(notesForInsights[numberOfInsight].fechaInicio)))/2
+                 ,data: { x: notesForInsights[numberOfInsight].fechaInicio }
+              }];
+
+              const makeAnnotations = d3.annotation()
+                                        .type(d3.annotationCalloutRect)
+                                        .accessors({ 
+                                          x: function(d){ return x(new Date(d.x)) + margin.left},
+                                          y: function(d){ return y(d.y) }
+                                        })
+                                        .annotations(annotations)
+
+              d3.select("svg")
+                .append("g")
+                .attr("class", "annotation-group")
+                .call(makeAnnotations)                
+
+        }
+      }
+
+      numberOfInsight++;      
+    }
+
+    draw();
+
+
+    </script>
+  </td>
+  </tr>
+  </table>
+</body>
+</html>
